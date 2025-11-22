@@ -1,12 +1,21 @@
 const express = require("express");
 const authRouter = express.Router();
 
-const { validateUserRegistration, validateUserLogin } = require("../validators/auth");
-const { runValidation } = require("../validators");
-const { handleLogin, handleLogout } = require("../controllers/authController");
-const { isLoggedOut, isLoggedIn } = require("../middlewares/auth");
+// const { validateUserRegistration, validateUserLogin } = require("../validators/auth");
+// const { runValidation } = require("../validators");
+const { isLoggedIn, isLoggedOut } = require("../middlewares/authMiddleware");
+const { registerUser, activateUserAccount, loginUser, getProfile, logoutUser } = require("../controllers/authController");
 
-authRouter.post("/login", validateUserLogin, runValidation, isLoggedOut, handleLogin);
-authRouter.post("/logout", isLoggedIn, handleLogout);
+// Public Routes
+authRouter.post("/register", isLoggedOut, registerUser); 
+authRouter.post("/activate", isLoggedOut, activateUserAccount);
+authRouter.post("/login", isLoggedOut, loginUser);
+
+// Protected Routes
+authRouter.get("/me", isLoggedIn, getProfile);
+authRouter.post("/logout", logoutUser);
+
+
+// userRouter.put("/update-password/:id", isLoggedIn, handleUpdatePassword);
 
 module.exports = authRouter;

@@ -1,12 +1,12 @@
 const express = require("express");
 const seedRouter = express.Router();
 
-const { seedUser } = require("../controllers/seedController.js");
-// const upload = require("../middlewares/uploadFile");
-const { validateUserRegistration } = require("../validators/auth");
-const { runValidation } = require("../validators");
+const { seedDatabase } = require("../controllers/seedController");
 
-// seedRouter.get("/users", upload.single('image'), validateUserRegistration, runValidation, seedUser);
-seedRouter.get("/users", validateUserRegistration, runValidation, seedUser);
+// might need to protect this route in production 
+// so random people don't reset database.
+// For now, it's public for ease of development.
+
+seedRouter.get("/", seedDatabase); 
 
 module.exports = seedRouter;

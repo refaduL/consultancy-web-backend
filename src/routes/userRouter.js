@@ -1,34 +1,25 @@
 const express = require("express");
 const userRouter = express.Router();
 
-const {getUsers, handleGetUserById, handleDeleteUserById, handleUpdateUserById, handleUpdatePassword,
-  processRegister, activateUserAccount, handleManageUserStatusById} = require("../controllers/userController");
 const uploadUserImage = require("../middlewares/uploadFile");
-const { validateUserRegistration, validateUserPasswordUpdate } = require("../validators/auth");
-const { runValidation } = require("../validators");
-const { validateObjectId, isLoggedIn, isLoggedOut, isAdmin } = require("../middlewares/auth");
+const { isLoggedIn, authorize } = require("../middlewares/authMiddleware");
+const { getUsers, handleGetUserById, handleUpdateUserById, handleDeleteUserById } = require("../controllers/userController");
 
 
-// user routes
+// 1. Get All Users (Admin only)
+userRouter.get("/", isLoggedIn, authorize('admin'), getUsers);
+// userRouter.get("/", getUsers);
 
-// signUp and verify
-userRouter.post("/process-register", isLoggedOut, uploadUserImage.single("image"), validateUserRegistration,
-  runValidation, processRegister);
-userRouter.post("/activate", isLoggedOut, activateUserAccount);
+// 2. Get Single User (Admin or the specific user)
+userRouter.get("/:id", isLoggedIn, handleGetUserById);
 
-// basic user crud
-userRouter.get("/", isLoggedIn, isAdmin, getUsers);
-userRouter.get("/:id", isLoggedIn, validateObjectId, handleGetUserById);
-userRouter.delete("/:id", isLoggedIn, validateObjectId, handleDeleteUserById);
+// 3. Update User Profile (Own profile or Admin)
+// Expects 'image' field in form-data for profile picture
 userRouter.put("/:id", isLoggedIn, uploadUserImage.single("image"), handleUpdateUserById);
-userRouter.put("/update-password/:id", 
-  validateUserPasswordUpdate, runValidation, isLoggedIn, validateObjectId, handleUpdatePassword);
-userRouter.put("/manage-user/:id", isLoggedIn, isAdmin, validateObjectId, handleManageUserStatusById);
 
-userRouter.get("/profile", (req, res) => {
-  res.status(200).send({
-    message: "user returned succesfully",
-  });
-});
+// 4. Delete User (Admin only)
+userRouter.delete("/:id", isLoggedIn, authorize('admin'), handleDeleteUserById);
+// userRouter.delete("/:id", handleDeleteUserById);
+
 
 module.exports = userRouter;

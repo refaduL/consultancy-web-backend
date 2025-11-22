@@ -4,31 +4,30 @@ const jwt = require("jsonwebtoken");
 const { jwtAccessKey } = require("../secret");
 
 
-const validateObjectId = async (req, res, next) => {
-  try {
-    const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw createError(400, "Invalid ID format");
-    }
-    next();
-  } catch (error) {
-    return next(error);
-  }
-};
+
 
 const isLoggedIn = async (req, res, next) => {
   try {
     // is there access token?
     const accessToken = req.cookies.accessToken;
     if (!accessToken) {
-      throw createError(401, "Access token not found. Please Log in");
+      throw createError(401, "Access token not found. Please Login");
     }
     const decoded = jwt.verify(accessToken, jwtAccessKey);
     if (!decoded) {
       throw createError(401, "Invalid access token. Please login again");
     }
-    req.user = decoded.user;
+
+    const user = await User.findById(decoded.id)
+      .select("-password")
+      .populate("role");
+    
+    if (!user) {
+      throw createError(401, "User belonging to this token no longer exists.");
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     return next(error);
