@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const createError = require("http-errors");
 
 const User = require("../models/userModel");
-const { deleteImage } = require("../helper/deleteImage");
+const { deleteImage } = require("../helpers/deleteImage");
 
 const findUsers = async (search = "", page = 1, limit = 5) => {
   const searchRegExp = new RegExp(".*" + search + ".*", "i");
-  
+
   const filter = {
     $or: [
       { first_name: { $regex: searchRegExp } },
@@ -23,9 +23,8 @@ const findUsers = async (search = "", page = 1, limit = 5) => {
     .select("-password")
     .populate("role")
     .sort({ createdAt: -1 });
-  
-  if (!users || users.length === 0)
-      throw createError(404, "no user found");
+
+  if (!users || users.length === 0) throw createError(404, "no user found");
 
   const count = await User.find(filter).countDocuments();
 
@@ -36,7 +35,7 @@ const findUsers = async (search = "", page = 1, limit = 5) => {
       currentPage: page,
       previousPage: page - 1 > 0 ? page - 1 : null,
       nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null,
-      totalUsers: count
+      totalUsers: count,
     },
   };
 };
@@ -44,8 +43,8 @@ const findUsers = async (search = "", page = 1, limit = 5) => {
 const findUserById = async (id, options = {}) => {
   try {
     const user = await User.findById(id, options)
-    .populate("role")
-    .populate("agent_profile"); // If they are an agent, show profile
+      .populate("role")
+      .populate("agent_profile"); // If they are an agent, show profile
     console.log("Found user:", user);
     if (!user) {
       throw createError(404, `User not found with id: ${id}`);
@@ -89,20 +88,23 @@ const updateUserById = async (userId, req) => {
       if (image.size > 1024 * 1024 * 2) {
         throw createError(400, "Image file too large. Must be less than 2MB");
       }
-      
+
       // Delete old image if it's not the default one
       // Assuming user.profile_picture_url stores the path or filename
-      if (user.profile_picture_url && !user.profile_picture_url.includes("default")) {
-          try {
-             // Check if file exists before trying to delete
-             // Logic depends on how you store paths (absolute vs relative)
-             // This is a placeholder for your delete logic
-             // await fs.unlink(user.profile_picture_url); 
-          } catch (err) {
-              console.error("Failed to delete old image:", err.message);
-          }
+      if (
+        user.profile_picture_url &&
+        !user.profile_picture_url.includes("default")
+      ) {
+        try {
+          // Check if file exists before trying to delete
+          // Logic depends on how you store paths (absolute vs relative)
+          // This is a placeholder for your delete logic
+          // await fs.unlink(user.profile_picture_url);
+        } catch (err) {
+          console.error("Failed to delete old image:", err.message);
+        }
       }
-      
+
       // Update path in updateData
       updates.profile_picture_url = image.path;
     }
@@ -116,20 +118,27 @@ const updateUserById = async (userId, req) => {
     //   // updates.image = image.buffer.toString("base64");  // image as buffer
     //   updates.image = image;                               // image as String
     //   user.image !== "default.jpg" && deleteImage(user.image);
-    // } 
+    // }
 
     // 2. Handle Field Updates
     // We specify allowed fields to prevent users from updating restricted items (like role or email)
     const allowedUpdates = [
-        "first_name", "last_name", "phone", "date_of_birth", 
-        "gender", "nationality", "country_of_residence", 
-        "address", "city", "country"
-    ]; 
+      "first_name",
+      "last_name",
+      "phone",
+      "date_of_birth",
+      "gender",
+      "nationality",
+      "country_of_residence",
+      "address",
+      "city",
+      "country",
+    ];
 
     allowedUpdates.forEach((field) => {
-        if (req.body[field] !== undefined) {
-            updates[field] = req.body[field];
-        }
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
     });
 
     // update user info;
@@ -151,7 +160,14 @@ const updateUserById = async (userId, req) => {
   }
 };
 
-const updateUserPasswordById = async (userId, email, oldPassword, newPassword, confirmedPassword, req) => {
+const updateUserPasswordById = async (
+  userId,
+  email,
+  oldPassword,
+  newPassword,
+  confirmedPassword,
+  req
+) => {
   try {
     // isExist ?
     const user = await User.findOne({ email });

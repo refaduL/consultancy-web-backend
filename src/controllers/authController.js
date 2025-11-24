@@ -4,11 +4,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const Role = require("../models/roleModel");
 
-
 const { successResponse } = require("./responseController");
 const { jwtActivationKey, jwtAccessKey, clientURL } = require("../secret");
-const { createJSONWebToken } = require("../helper/jsonwebtoken");
-const { emailWithNodeMailer } = require("../helper/email");
+const { createJSONWebToken } = require("../helpers/jsonwebtoken");
+const { emailWithNodeMailer } = require("../helpers/email");
 
 /**
  * REGISTER USER
@@ -16,8 +15,9 @@ const { emailWithNodeMailer } = require("../helper/email");
  */
 const registerUser = async (req, res, next) => {
   try {
+    console.log("Register User Request Body:", req.body);
     const {
-      first_name, 
+      first_name,
       last_name,
       email,
       password,
@@ -48,7 +48,7 @@ const registerUser = async (req, res, next) => {
     }
 
     const newUser = {
-      first_name, 
+      first_name,
       last_name,
       email,
       password,
@@ -73,7 +73,7 @@ const registerUser = async (req, res, next) => {
       email,
       subject: "Account Verification Email",
       html: `
-            <h2>Hello ${first_name + ' ' + last_name} !</h2>
+            <h2>Hello ${first_name + " " + last_name} !</h2>
             <p>Please click here to  <a href="${clientURL}/api/users/activate/${token}" target="_blank">Verify Your Email</a> and Activate your account </p>
           `,
     };
@@ -119,7 +119,7 @@ const activateUserAccount = async (req, res, next) => {
 
       // 3. SANITIZE: Remove 'iat' and 'exp' so they don't mess up Mongoose
       const { iat, exp, ...userInfo } = decoded;
-      
+
       // 4. Create User and explicitly force isVerified: true
       userInfo.is_verified = true;
       const newUser = await User.create(userInfo);
@@ -129,13 +129,11 @@ const activateUserAccount = async (req, res, next) => {
         message: `User was registered successfully`,
         payload: { newUser },
       });
-
     } catch (error) {
       // 5. Specific JWT Errors
       if (error.name === "TokenExpiredError") {
         throw createError(401, "Token has expired. Please register again.");
-      } 
-      else if (error.name === "JsonWebTokenError") {
+      } else if (error.name === "JsonWebTokenError") {
         throw createError(401, "Invalid token");
       }
       // 6. Handle Race Condition (Duplicate Key Error)
@@ -145,8 +143,7 @@ const activateUserAccount = async (req, res, next) => {
       // 7. Handle Mongoose Validation Errors (e.g., Missing required fields in token)
       else if (error.name === "ValidationError") {
         throw createError(422, error.message);
-      }
-      else {
+      } else {
         throw error;
       }
     }
@@ -203,11 +200,11 @@ const loginUser = async (req, res, next) => {
       payload: {
         user: {
           _id: user._id,
-          name: user.first_name + ' ' + user.last_name,
+          name: user.first_name + " " + user.last_name,
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email,
-          role: user.role.role_name, 
+          role: user.role.role_name,
         },
         accessToken,
       },
@@ -227,7 +224,7 @@ const getProfile = async (req, res, next) => {
     const user = await User.findById(req.user._id)
       .populate("role")
       .populate("agent_profile")
-      .populate("application"); 
+      .populate("application");
 
     return successResponse(res, {
       statusCode: 200,
