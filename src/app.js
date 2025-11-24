@@ -8,7 +8,10 @@ const rateLimit = require("express-rate-limit");
 const seedRouter = require("./routes/seedRouter");
 const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
+const applicationRouter = require("./routes/applicationRouter");
 
+const dbErrorHandler = require("./utils/dbErrorHandler");
+const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
 const { errorResponse } = require("./controllers/responseController");
 
 const app = express();
@@ -32,15 +35,39 @@ app.get("/test", (req, res) => {
 app.use("/api/seed", seedRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/applications", applicationRouter);
 
-// client error handle
+// handle 404 error => route not found
 app.use((req, res, next) => {
   next(createError(404, `route not found: ${req.originalUrl}`));
 });
 
-// server error handling -> all error from any route will go through the this handler
+// Global Error Handling Middleware
 app.use((err, req, res, next) => {
-  return errorResponse(res, { statusCode: err.status, message: err.message });
+  // Check if it's a database-related error
+  if (dbErrorHandler.isDatabaseError(err)) {
+    const dbError = dbErrorHandler(err);
+    return errorResponse(res, {
+      statusCode: dbError.statusCode,
+      message: dbError.message,
+      code: dbError.code,
+      details: dbError.details,
+      originalError: err,
+      path: req.originalUrl,
+    });
+  }
+
+  // For other errors, normalize and send response
+  const errorInfo = {
+    statusCode: err.status || 500,
+    message: err.message || 'Internal Server Error',
+    code: err.code || getDefaultErrorCode(err.status || 500),
+    details: err.details || getErrorDetails(err, err.status || 500),
+    originalError: err,
+    path: err.path || req.originalUrl
+  };
+
+  return errorResponse(res, errorInfo);
 });
 
 module.exports = app;
