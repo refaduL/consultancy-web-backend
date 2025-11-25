@@ -89,6 +89,19 @@ PUT    /api/users/:id
 DEL    /api/users/:id
 GET    /api/users/search
 
+# Applications
+GET    /api/applications
+POST    /api/applications/submit
+PUT    /api/applications/upload-docs
+GET    /api/applications/me
+GET    /api/applications/all
+GET    /api/applications/assigned
+GET    /api/applications/:id
+GET    /api/applications/:id/initial-review
+GET    /api/applications/:id/review-doc
+GET    /api/applications/:id/final-decision
+GET    /api/applications/search
+
 # Universities
 GET    /api/universities
 GET    /api/universities/:id

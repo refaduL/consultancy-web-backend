@@ -3,6 +3,7 @@ const Application = require("../models/applicationModel");
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 const { findApplicationByUserId, findApplicationByAppId, findAllApplications } = require("../services/applicationService");
+const deleteOldFile = require("../helpers/deleteOldFile");
 
 /**
  * 1. STUDENT: Submit or Update Textual Application
@@ -116,32 +117,34 @@ const handleInitialReview = async (req, res, next) => {
 const handleUploadDocuments = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const files = req.files; // Expecting object from multer fields
+    const files = req.files; 
 
     const application = await Application.findOne({ user: userId });
-
     if (!application) throw createError(404, "Application not found");
     
-    if (application.status !== 'accepted' && application.status !== 'approved') {
-        // Technically 'approved' implies done, but maybe they need to re-upload a specific revised doc?
-        // Let's stick to strict flow:
-        if (application.status !== 'accepted') {
-            throw createError(403, "You can only upload documents after your application is Accepted.");
-        }
+    // Allow uploads only when accepted
+    if (application.status !== "accepted") {
+      throw createError(403, "You can only upload documents when your application is accepted.");
     }
 
     // Map uploaded files to schema fields
-    // Expecting req.files to look like: { transcript: [file], resume_cv: [file] }
     const docFields = ['transcript', 'statementOfPurpose', 'resume_cv', 'letterOfRecommendation1', 'letterOfRecommendation2'];
 
     let updatedCount = 0;
 
     docFields.forEach(field => {
         if (files[field] && files[field][0]) {
+
+            // Get old filename from schema and delete
+            const oldFilepath = application.documents[field]?.url;
+            if (oldFilepath) {
+              deleteOldFile(oldFilepath);
+            }
+
             // Update the specific document field
             application.documents[field].url = files[field][0].path;
-            application.documents[field].status = 'submitted'; // Mark this doc as ready for review
-            application.documents[field].feedback = null; // Clear old feedback
+            application.documents[field].status = 'submitted';
+            application.documents[field].feedback = null;
             application.documents[field].updatedAt = new Date();
             updatedCount++;
         }

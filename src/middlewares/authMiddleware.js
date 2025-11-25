@@ -95,6 +95,9 @@ const authorize = (...allowedRoles) => {
 
     // Check if user's role name is in the allowed list
     const userRole = req.user.role?.role_name;
+    console.log("User Role:", userRole);
+    console.log("Allowed Roles:", allowedRoles);
+    console.log("Authorization Check:", allowedRoles.includes(userRole));
 
     if (!userRole || !allowedRoles.includes(userRole)) {
       return next(
