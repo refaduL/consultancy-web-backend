@@ -71,7 +71,7 @@ const handleInitialReview = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { review, rejectionFeedback } = req.body;
-    const agentId = req.user._id; // The agent performing the action
+    const agentId = req.user.agent_profile; // The agent performing the action
 
     if (!['accepted', 'rejected'].includes(review)) {
       throw createError(400, "review must be 'accepted' or 'rejected'");
@@ -180,7 +180,6 @@ const handleDocumentReview = async (req, res, next) => {
     const application = await findApplicationByAppId(id);
 
     // Security: Only assigned agent (or admin) can review
-    // req.user is guaranteed by middleware
     if (req.user.role.role_name !== 'admin' && application.agent.toString() !== req.user.agent_profile.toString()) {
         throw createError(403, "You are not the assigned agent for this application.");
     }

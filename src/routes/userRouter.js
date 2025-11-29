@@ -3,11 +3,12 @@ const userRouter = express.Router();
 
 const uploadUserImage = require("../middlewares/uploadFile");
 const { isLoggedIn, authorize } = require("../middlewares/authMiddleware");
-const { getUsers, handleGetUserById, handleUpdateUserById, handleDeleteUserById } = require("../controllers/userController");
+const { getUsers, handleGetUserById, handleUpdateUserById, handleDeleteUserById, getAgents } = require("../controllers/userController");
 
 
 // 1. Get All Users (Admin only)
-userRouter.get("/", isLoggedIn, authorize('admin'), getUsers);
+userRouter.get("/", isLoggedIn, authorize('admin', 'agent'), getUsers);
+userRouter.get("/agents", isLoggedIn, authorize('admin'), getAgents);
 // userRouter.get("/", getUsers);
 
 // 2. Get Single User (Admin or the specific user)

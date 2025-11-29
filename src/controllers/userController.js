@@ -6,7 +6,7 @@ const { findUsers, findUserById, deleteUserById, updateUserById, updateUserPassw
 
 
 /**
- * GET ALL USERS (Admin)
+ * GET ALL USERS (Agent, Admin)
  * Uses the service for pagination and search
  */
 const getUsers = async (req, res, next) => {
@@ -29,6 +29,34 @@ const getUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * GET ALL Agents (Admin)
+ * Uses the service for pagination and search
+ */
+
+const getAgents = async (req, res, next) => {
+  try {
+    const search = req.query.search || "";
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+
+    const { users, pagination } = await findUsers(search, page, limit,);
+    const filteredAgents = users.filter(user => user.role.role_name === 'agent');
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "agents returned succesfully",
+      payload: {
+        filteredAgents,
+        pagination,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 /**
  * GET SINGLE USER BY ID
@@ -126,6 +154,7 @@ const handleUpdatePassword = async (req, res, next) => {
 
 module.exports = {
   getUsers,
+  getAgents,
   handleGetUserById,
   handleDeleteUserById,
   handleUpdateUserById,

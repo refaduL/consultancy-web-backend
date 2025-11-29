@@ -52,7 +52,7 @@ applicationRouter.put("/:id/initial-review", isLoggedIn, authorize("agent", "adm
 
 // 7. Review Specific Document
 applicationRouter.put(
-  "/:id/review-doc",
+  "/:id/doc-review",
   isLoggedIn,
   authorize("agent", "admin"),
   handleDocumentReview

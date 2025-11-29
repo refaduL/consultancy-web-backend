@@ -16,8 +16,7 @@ const findApplicationByUserId = async (userId) => {
  */
 const findApplicationByAppId = async (appId) => {
   const app = await Application.findById(appId)
-    .populate("user", "first_name last_name email phone nationality")
-    .populate("agent", "first_name last_name");
+    .populate("user", "first_name last_name email phone nationality");
   
   if (!app) throw createError(404, "Application not found");
   return app;
