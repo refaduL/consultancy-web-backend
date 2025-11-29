@@ -9,16 +9,30 @@ const universitySchema = new Schema(
       trim: true,
       unique: true,
     },
-    country: {
+    // Adding native name for search optimization (e.g., "Technische Universität München")
+    native_name: {
       type: String,
-      required: [true, 'Country is required'],
       trim: true,
+    },
+    type: {
+      type: String,
+      enum: ['Public', 'Private', 'Semi-Private'],
+      default: 'Public',
       index: true,
+    },
+    established_year: {
+      type: Number,
     },
     city: {
       type: String,
       required: [true, 'City is required'],
       trim: true,
+    },
+    country: {
+      type: String,
+      required: [true, 'Country is required'],
+      trim: true,
+      index: true,
     },
     description: {
       type: String,
@@ -28,15 +42,26 @@ const universitySchema = new Schema(
       type: String,
       trim: true,
     },
+    // Media
     logo_url: {
       type: String,
-      trim: true,
       default: 'https://placehold.co/400x400/eeeeee/888888?text=University',
     },
+    gallery: {
+      type: [String], // Array of image URLs for campus slider
+      default: [],
+    },
+    // Rankings
     rankings: {
-      qs: Number,
-      times: Number,
-      us_news: Number,
+      qs: { type: Number, default: null },
+      times: { type: Number, default: null },
+      us_news: { type: Number, default: null },
+    },
+    // Contact for Admissions (Helpful for agents)
+    contact_info: {
+      email: { type: String, trim: true },
+      phone: { type: String, trim: true },
+      address: { type: String, trim: true }, // Full street address
     },
     /**
      * General application deadline information, if one exists.
@@ -45,6 +70,12 @@ const universitySchema = new Schema(
     general_application_info: {
       type: String,
       trim: true,
+    },
+    // Key Selling Points
+    // e.g. ["On-campus Housing", "Library", "Sports Facilities"]
+    facilities: {
+      type: [String],
+      default: [],
     },
   },
   {

@@ -44,8 +44,8 @@ const findUserById = async (id, options = {}) => {
   try {
     const user = await User.findById(id, options)
       .populate("role")
-      .populate("agent_profile"); // If they are an agent, show profile
-    console.log("Found user:", user);
+      .populate("agent_profile");
+
     if (!user) {
       throw createError(404, `User not found with id: ${id}`);
     }
@@ -61,7 +61,7 @@ const findUserById = async (id, options = {}) => {
 const deleteUserById = async (id, options = {}) => {
   try {
     const user = await User.findByIdAndDelete({ _id: id, ...options });
-    console.log("Deleted user:", user);
+    
     if (user && user.image) {
       await deleteImage(user.image);
     }

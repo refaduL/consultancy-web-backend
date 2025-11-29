@@ -9,7 +9,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "First name is required"],
       trim: true,
-      maxlength: [31, "The length of Username can be maximum 31 char"],
+      maxlength: [31, "First name max 31 chars"],
     },
     last_name: {
       type: String,
@@ -31,8 +31,8 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, "User password is required"],
-      minlength: [6, "The length of User password should be minimum 6 char"],
-      maxlength: [31, "The length of User password can be maximum 31 char"],
+      minlength: [6, "Password min 6 chars"],
+      maxlength: [31, "Password max 31 chars"],
       select: false,
     },
     phone: {
@@ -41,38 +41,16 @@ const userSchema = new Schema(
       trim: true,
     },
 
-    date_of_birth: {
-      type: Date,
-      required: [true, "Date of birth is required"],
-    },
-    gender: {
-      type: String,
-      enum: ["Male", "Female", "Other"],
-      required: [true, "Gender is required"],
-    },
-    nationality: {
-      type: String,
-      trim: true,
-      required: [true, "Nationality is required"],
-    },
-    country_of_residence: {
-      type: String,
-      trim: true,
-      required: [true, "Country of residence is required"],
-    },
+    // Demographics
+    date_of_birth: { type: Date, required: true },
+    gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
+    nationality: { type: String, trim: true, required: true },
+    country_of_residence: { type: String, trim: true, required: true },
 
-    address: {
-      type: String,
-      trim: true,
-    },
-    city: {
-      type: String,
-      trim: true,
-    },
-    country: {
-      type: String,
-      trim: true,
-    },
+    // Location
+    address: { type: String, trim: true },
+    city: { type: String, trim: true },
+    country: { type: String, trim: true }, // Address Country
 
     // === Profile & Other Attributes ===
 
@@ -86,13 +64,24 @@ const userSchema = new Schema(
 
       //   default: "https://placehold.co/400x400/eeeeee/888888?text=User",
     },
-    is_verified: {
-      type: Boolean,
-      default: false,
+
+    social_links: {
+      linkedin: { type: String, trim: true },
+      portfolio: { type: String, trim: true },
     },
 
-    // === Relationships ===
+    // System Status
+    is_verified: { type: Boolean, default: false },
+    is_banned: { type: Boolean, default: false }, 
+    last_login: { type: Date, default: null },
 
+    // Preferences
+    notification_settings: {
+      email_alerts: { type: Boolean, default: true },
+      app_updates: { type: Boolean, default: true }
+    },
+
+    // Relationships
     role: {
       type: Schema.Types.ObjectId,
       ref: "Role",
@@ -114,7 +103,7 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-// === HOOKS (Middleware) ===
+// HOOKS (Middleware)
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
@@ -130,7 +119,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// === METHODS ===
+// METHODS
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
   const user = await this.constructor.findById(this._id).select("+password");

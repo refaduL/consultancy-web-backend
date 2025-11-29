@@ -12,6 +12,7 @@ const educationSchema = new Schema(
     fieldOfStudy: { type: String, required: true, trim: true }, // e.g., "Computer Science"
     graduationYear: { type: Number, required: true },
     gpa: { type: String, trim: true }, // Using String for flexibility (e.g., "3.8/4.0" or "85%")
+    grade_scale: { type: String, trim: true, default: "4.0" },
   },
   { _id: false }
 );
@@ -43,14 +44,10 @@ const internalNoteSchema = new Schema({
  */
 const documentStatusSchema = new Schema(
   {
-    url: {
-      type: String,
-      trim: true,
-      default: null,
-    },
+    url: { type: String, trim: true, default: null },
     status: {
       type: String,
-      feedbackenum: [
+      enum: [
         "pending",
         "submitted",
         "approved",
@@ -58,16 +55,9 @@ const documentStatusSchema = new Schema(
       ],
       default: "pending", // 'pending' = not yet uploaded by user
     },
-    feedback: {
-      // For agent to provide feedback (e.g., "PDF is blurry")
-      type: String,
-      trim: true,
-      default: null,
-    },
-    updatedAt: {
-      type: Date,
-      default: null,
-    },
+    // For agent to provide feedback (e.g., "PDF is blurry")
+    feedback: { type: String, trim: true, default: null },
+    updatedAt: { type: Date, default: null },
   },
   { _id: false }
 ); // _id: false to save space, we'll track by key name
@@ -83,6 +73,13 @@ const testScoreSchema = new Schema(
   },
   { _id: false }
 );
+
+// sub-schema of Threaded comments for communication
+const commentSchema = new Schema({
+  sender: { type: Schema.Types.ObjectId, ref: 'User', required: true }, // Can be Student or Agent (User ID)
+  message: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
 
 /**
  * The main Application Schema.
@@ -130,6 +127,13 @@ const applicationSchema = new Schema(
       index: true,
     },
 
+    // Audit Trail / Timeline
+    timeline: {
+      submittedAt: { type: Date },
+      acceptedAt: { type: Date }, 
+      approvedAt: { type: Date }, 
+      rejectedAt: { type: Date },
+    },
     /**
      * Feedback provided by the agent if the application is rejected.
      * This field is conditionally required.
@@ -174,12 +178,23 @@ const applicationSchema = new Schema(
     },
 
     /**
-     * Student's stated interests (submitted in the initial application).
+     * Student's stated interests 
+     * (submitted in the initial application).
      */
     preferences: {
       preferredCountries: { type: [String], default: [] },
       preferredFieldOfStudy: { type: String, trim: true, default: "" },
       preferredIntake: { type: String, trim: true, default: "" }, // e.g., "Fall 2026"
+    },
+
+    // Financial Context
+    financial_info: {
+      funding_source: { 
+        type: String, 
+        enum: ['Self-funded', 'Education Loan', 'Scholarship', 'Sponsor'],
+        default: 'Self-funded'
+      },
+      budget_range_usd: { type: String, trim: true }, // e.g. "10000-20000"
     },
 
     /**
@@ -200,6 +215,12 @@ const applicationSchema = new Schema(
         type: documentStatusSchema,
         default: () => ({}),
       },
+    },
+
+    // Communication thread between Agent and Student
+    comments: {
+      type: [commentSchema],
+      default: []
     },
 
     // A log of notes visible only to agents and admins.

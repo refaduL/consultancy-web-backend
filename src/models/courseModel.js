@@ -26,11 +26,28 @@ const courseSchema = new Schema(
       trim: true,
     },
     
-    /**
-     * The number of credits the course is worth.
-     * Stored as a string for flexibility (e.g., "3" or "3-4").
-     */
     credits: {
+      type: String, // (e.g., "3" or "3-4")
+      trim: true,
+    },
+
+    is_elective: {
+      type: Boolean,
+      default: false, // false = Core Course, true = Elective
+    },
+
+    semester: {
+      type: Number, // e.g., 1, 2, 3...
+    },
+
+    // e.g., "Must have completed CSE-100"
+    prerequisites: {
+      type: String,
+      trim: true,
+    },
+
+    // Link to PDF syllabus
+    syllabus_url: {
       type: String,
       trim: true,
     },

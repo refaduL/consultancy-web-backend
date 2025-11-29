@@ -30,7 +30,7 @@ const scholarshipSchema = new Schema(
     },
     
     /**
-     * The value of the award. Stored as a string for flexibility
+     * The value of the award. 
      * (e.g., "$5,000", "Full Tuition Waiver", "20% reduction").
      */
     amount: {
@@ -40,9 +40,15 @@ const scholarshipSchema = new Schema(
     },
     
     /**
-     * A description of the eligibility criteria.
-     * (e.g., "Open to int students with a GPA of 3.5+ from developing countries.")
+     * Targeted Audience
+     * nationalities: e.g. ["Bangladesh", "Nigeria"] or ["All"]
+     * criteria: (e.g., "Open to int students with a GPA of 3.5+ from developing countries.")
      */
+    // 
+    eligible_nationalities: {
+      type: [String], 
+      default: ["All"],
+    },
     eligibility_criteria: {
       type: String,
       trim: true,
@@ -50,8 +56,13 @@ const scholarshipSchema = new Schema(
     
     deadline: {
       type: Date,
+      index: true, // Important for sorting by "Closing Soon"
     },
-    
+    is_active: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
     scholarship_url: {
       type: String,
       trim: true,

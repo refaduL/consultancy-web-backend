@@ -16,9 +16,12 @@ const intakeSchema = new Schema({
     type: Date,
     required: true,
   },
+  start_date: {
+    type: Date,
+  },
   status: {
     type: String,
-    enum: ['open', 'closed'],
+    enum: ['open', 'closed', 'waitlist'],
     default: 'open',
   },
 }, { _id: false });
@@ -40,7 +43,7 @@ const programSchema = new Schema(
     degree_level: {
       type: String,
       required: true,
-      enum: ["Bachelor's", "Master's", "PhD", "Diploma", "Certificate"],
+      enum: ["Bachelor's", "Master's", "PhD", "Diploma", "Certificate", "Associate"],
       index: true, // Index for filtering
     },
     field_of_study: {
@@ -49,7 +52,22 @@ const programSchema = new Schema(
       trim: true,
       index: true, // Index for filtering
     },
+    study_mode: {
+      type: String,
+      enum: ['Full-time', 'Part-time', 'Online', 'Hybrid'],
+      default: 'Full-time',
+      index: true,
+    },
+    language_of_instruction: {
+      type: [String], 
+      default: ["English"],
+      index: true,
+    },
     description: {
+      type: String,
+      trim: true,
+    },
+    career_prospects: { // "Graduates often work at Google, Amazon..."
       type: String,
       trim: true,
     },
@@ -58,9 +76,15 @@ const programSchema = new Schema(
       required: true,
       trim: true,
     },
+    // Tuition Breakdown
     tuition_fee: {
       type: Number,
       index: true, // Index for range-based filtering (e.g., fee < 20000)
+    },
+    tuition_fee_type: {
+      type: String,
+      enum: ['Per Year', 'Per Semester', 'Total Program Fee', 'Per Credit'],
+      default: 'Per Year',
     },
     currency: {
       type: String,
@@ -77,6 +101,7 @@ const programSchema = new Schema(
       toefl: { type: Number, min: 0, max: 120 },
       gre: { type: Number, min: 260, max: 340 },
       gmat: { type: Number, min: 200, max: 800 },
+      work_experience_years: { type: Number, default: 0 }, // MBA programs often need this
       other: { type: String, trim: true },
     },
     intakes: {
@@ -96,7 +121,6 @@ const programSchema = new Schema(
  * VIRTUAL: courses
  * Creates a virtual field 'courses' on the program model.
  * This can be populated to get all courses that are part of this program.
- * (Assumes a 'Course' model exists, as in the ERD).
  */
 programSchema.virtual('courses', {
   ref: 'Course',
@@ -108,7 +132,6 @@ programSchema.virtual('courses', {
  * VIRTUAL: scholarships
  * Creates a virtual field 'scholarships' on the program model.
  * This can be populated to get all scholarships specific to this program.
- * (Assumes a 'Scholarship' model exists).
  */
 programSchema.virtual('scholarships', {
   ref: 'Scholarship',
