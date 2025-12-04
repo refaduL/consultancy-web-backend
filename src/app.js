@@ -13,6 +13,7 @@ const applicationRouter = require("./routes/applicationRouter");
 const dbErrorHandler = require("./utils/dbErrorHandler");
 const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
 const { errorResponse } = require("./controllers/responseController");
+const universityRouter = require("./routes/universityRouter");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/seed", seedRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/applications", applicationRouter);
+app.use("/api/universities", universityRouter);
 
 // handle 404 error => route not found
 app.use((req, res, next) => {
