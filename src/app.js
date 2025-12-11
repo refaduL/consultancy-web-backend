@@ -8,12 +8,13 @@ const rateLimit = require("express-rate-limit");
 const seedRouter = require("./routes/seedRouter");
 const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
+const programRouter = require("./routes/programRouter");
+const universityRouter = require("./routes/universityRouter");
 const applicationRouter = require("./routes/applicationRouter");
 
 const dbErrorHandler = require("./utils/dbErrorHandler");
 const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
 const { errorResponse } = require("./controllers/responseController");
-const universityRouter = require("./routes/universityRouter");
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/applications", applicationRouter);
 app.use("/api/universities", universityRouter);
+app.use("/api/programs", programRouter);
 
 // handle 404 error => route not found
 app.use((req, res, next) => {
