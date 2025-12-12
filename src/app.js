@@ -9,6 +9,8 @@ const seedRouter = require("./routes/seedRouter");
 const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
 const programRouter = require("./routes/programRouter");
+const courseRouter = require("./routes/courseRouter");
+const scholarshipRouter = require("../../store/scholarshipRouter");
 const universityRouter = require("./routes/universityRouter");
 const applicationRouter = require("./routes/applicationRouter");
 
@@ -40,6 +42,8 @@ app.use("/api/users", userRouter);
 app.use("/api/applications", applicationRouter);
 app.use("/api/universities", universityRouter);
 app.use("/api/programs", programRouter);
+app.use("/api/courses", courseRouter);
+app.use("/api/scholarships", scholarshipRouter);
 
 // handle 404 error => route not found
 app.use((req, res, next) => {
@@ -64,11 +68,11 @@ app.use((err, req, res, next) => {
   // For other errors, normalize and send response
   const errorInfo = {
     statusCode: err.status || 500,
-    message: err.message || 'Internal Server Error',
+    message: err.message || "Internal Server Error",
     code: err.code || getDefaultErrorCode(err.status || 500),
     details: err.details || getErrorDetails(err, err.status || 500),
     originalError: err,
-    path: err.path || req.originalUrl
+    path: err.path || req.originalUrl,
   };
 
   return errorResponse(res, errorInfo);
