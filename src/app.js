@@ -10,7 +10,7 @@ const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
 const programRouter = require("./routes/programRouter");
 const courseRouter = require("./routes/courseRouter");
-const scholarshipRouter = require("../../store/scholarshipRouter");
+const scholarshipRouter = require("./routes/scholarshipRouter");
 const universityRouter = require("./routes/universityRouter");
 const applicationRouter = require("./routes/applicationRouter");
 
