@@ -11,13 +11,22 @@ const {
   handleGetApplication,
 } = require("../controllers/applicationController");
 
-const { isLoggedIn, authorize } = require("../middlewares/authMiddleware");
 const uploadFile = require("../middlewares/uploadFile");
+const { isLoggedIn, authorize } = require("../middlewares/authMiddleware");
+const { validateApplication } = require("../validators/applicationValidator");
+const { runValidation } = require("../validators/index");
 
 // === STUDENT ROUTES ===
 
 // 1. Submit or Update Application (Text fields only)
-applicationRouter.post("/submit", isLoggedIn, authorize("student"), handleSubmitApplication);
+applicationRouter.post(
+  "/submit",
+  validateApplication("create"),
+  runValidation,
+  isLoggedIn,
+  authorize("student"),
+  handleSubmitApplication
+);
 
 // 2. Upload Documents (Only after acceptance)
 // We use .fields() to handle multiple named inputs
@@ -36,19 +45,53 @@ applicationRouter.put(
 );
 
 // 3. Get My Application
-applicationRouter.get("/me", isLoggedIn, authorize("student"), handleGetApplication);
+applicationRouter.get(
+  "/me",
+  validateApplication("getOne"),
+  runValidation,
+  isLoggedIn,
+  authorize("student"),
+  handleGetApplication
+);
 
 // === AGENT / ADMIN ROUTES ===
 
 // 4. Get All Applications
-applicationRouter.get("/all", isLoggedIn, authorize("agent", "admin"), handleGetAllApplications);
-applicationRouter.get("/assigned", isLoggedIn, authorize("agent"), handleGetAllApplications);
+applicationRouter.get(
+  "/all",
+  validateApplication("getMany"),
+  runValidation,
+  isLoggedIn,
+  authorize("agent", "admin"),
+  handleGetAllApplications
+);
+
+applicationRouter.get(
+  "/assigned",
+  validateApplication("getMany"),
+  runValidation,
+  isLoggedIn,
+  authorize("agent"),
+  handleGetAllApplications
+);
 
 // 5. Get Specific Application by ID
-applicationRouter.get("/:id", isLoggedIn, authorize("agent", "admin"), handleGetApplication);
+applicationRouter.get(
+  "/:id",
+  validateApplication("getOne"),
+  runValidation,
+  isLoggedIn,
+  authorize("agent", "admin"),
+  handleGetApplication
+);
 
 // 6. Initial Review (Accept/Reject textual data)
-applicationRouter.put("/:id/initial-review", isLoggedIn, authorize("agent", "admin"), handleInitialReview);
+applicationRouter.put(
+  "/:id/initial-review",
+  isLoggedIn,
+  authorize("agent", "admin"),
+  handleInitialReview
+);
 
 // 7. Review Specific Document
 applicationRouter.put(
