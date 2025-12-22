@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 const { mongodbUrl } = require("../secret");
 
 const connectDB = async (options = {
-      serverSelectionTimeoutMS: 10000, // 10 seconds
-      socketTimeoutMS: 15000, // 15 seconds
+      serverSelectionTimeoutMS: 30000, // 30 seconds
+      socketTimeoutMS: 45000, // 45 seconds
       maxPoolSize: 10,
       minPoolSize: 5,
       maxIdleTimeMS: 30000,

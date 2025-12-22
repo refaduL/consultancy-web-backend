@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
@@ -19,6 +20,12 @@ const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
 const { errorResponse } = require("./controllers/responseController");
 
 const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173", // frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 
 const rateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
