@@ -28,6 +28,7 @@ const findAllUniversities = async (search = "", page = 1, limit = 10) => {
   }
 
   const universities = await University.find(filter)
+    .populate("programs", "intakes")
     .limit(limitNumber)
     .skip((pageNumber - 1) * limitNumber)
     .sort({ name: 1 })

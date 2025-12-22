@@ -61,8 +61,8 @@ applicationRouter.get(
   "/all",
   validateApplication("getMany"),
   runValidation,
-  isLoggedIn,
-  authorize("agent", "admin"),
+  // isLoggedIn,
+  // authorize("agent", "admin"),
   handleGetAllApplications
 );
 

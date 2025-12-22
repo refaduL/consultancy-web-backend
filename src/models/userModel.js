@@ -100,7 +100,11 @@ const userSchema = new Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 // HOOKS (Middleware)
@@ -125,6 +129,14 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   const user = await this.constructor.findById(this._id).select("+password");
   return await bcrypt.compare(candidatePassword, user.password);
 };
+
+
+// VIRTUAL: applications
+userSchema.virtual("applications", {
+  ref: "Application",
+  localField: "_id",
+  foreignField: "user",
+});
 
 const User = mongoose.model("User", userSchema);
 

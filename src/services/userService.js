@@ -18,6 +18,7 @@ const findUsers = async (search = "", page = 1, limit = 5) => {
   };
 
   const users = await User.find(filter)
+    .populate("applications", "status")
     .limit(limit)
     .skip((page - 1) * limit)
     .select("-password")

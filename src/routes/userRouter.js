@@ -9,7 +9,8 @@ const { getUsers, handleGetUserById, handleUpdateUserById, handleDeleteUserById,
 
 
 // 1. Get All Users (Admin only)
-userRouter.get("/", validateUser("getMany"), runValidation, isLoggedIn, authorize('admin', 'agent'), getUsers);
+userRouter.get("/", validateUser("getMany"), runValidation, getUsers);
+// userRouter.get("/", validateUser("getMany"), runValidation, isLoggedIn, authorize('admin', 'agent'), getUsers);
 userRouter.get("/agents", validateUser("getMany"), runValidation, isLoggedIn, authorize('admin'), getAgents);
 // userRouter.get("/", getUsers);
 
