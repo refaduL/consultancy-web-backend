@@ -1,12 +1,12 @@
 const fs = require("fs");
 const path = require("path");
 
-const deleteFile = (filePath) => {
-  if (!filePath) return;
-  console.log("Attempting to delete file:" , filePath);
+const deleteFile = (relativePath) => {
+  if (!relativePath) return;
+  console.log("Attempting to delete file:" , relativePath);
   try {
-    const absolutePath = filePath;
-    // const absolutePath = path.join(__dirname, "..", "..", filePath);
+    const absolutePath = path.join(__dirname, "..", "..", relativePath); // starts from "server/relativePath/to/file"
+
     if (fs.existsSync(absolutePath)) {
       fs.unlinkSync(absolutePath);
       console.log("Deleted old file:", absolutePath);

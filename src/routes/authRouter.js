@@ -8,12 +8,12 @@ const { registerUser, activateUserAccount, loginUser, getProfile, logoutUser } =
 
 // Public Routes
 authRouter.post("/register", isLoggedOut, registerUser); 
-authRouter.post("/activate", isLoggedOut, activateUserAccount);
+authRouter.get("/activate/:token", isLoggedOut, activateUserAccount);
 authRouter.post("/login", isLoggedOut, loginUser);
 
 // Protected Routes
 authRouter.get("/me", isLoggedIn, getProfile);
-authRouter.post("/logout", logoutUser);
+authRouter.post("/logout", isLoggedIn, logoutUser);
 
 
 // userRouter.put("/update-password/:id", isLoggedIn, handleUpdatePassword);

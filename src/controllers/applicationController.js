@@ -125,10 +125,10 @@ const handleUploadDocuments = async (req, res, next) => {
     // Allow uploads only when accepted
     if (application.status !== "accepted") {
       throw createError(403, "You can only upload documents when your application is accepted.");
-    }
+    } 
 
     // Map uploaded files to schema fields
-    const docFields = ['transcript', 'statementOfPurpose', 'resume_cv', 'letterOfRecommendation1', 'letterOfRecommendation2'];
+    const docFields = ['transcript', 'degreeCertificate', 'englishTestScore', 'statementOfPurpose', 'resume_cv', 'letterOfRecommendation1', 'letterOfRecommendation2', 'passportCopy', 'portfolio', 'workExperienceLetter'];
 
     let updatedCount = 0;
 
@@ -142,10 +142,14 @@ const handleUploadDocuments = async (req, res, next) => {
             }
 
             // Update the specific document field
-            application.documents[field].url = files[field][0].path;
-            application.documents[field].status = 'submitted';
-            application.documents[field].feedback = null;
-            application.documents[field].updatedAt = new Date();
+            const file = files[field][0];
+            const absolutePath = file.path; 
+            const relativeUrl = `/uploads/applications/${file.filename}`;
+
+            application.documents[field].url = relativeUrl;
+            application.documents[field].status = 'uploaded';
+            application.documents[field].adminFeedback = null;
+            application.documents[field].uploadedAt = new Date();
             updatedCount++;
         }
     });
@@ -173,7 +177,7 @@ const handleDocumentReview = async (req, res, next) => {
     const { id } = req.params;
     const { docName, status, feedback } = req.body;
 
-    if (!['approved', 'rejected_for_revision'].includes(status)) {
+    if (!['approved', 'rejected'].includes(status)) {
         throw createError(400, "Status must be 'approved' or 'rejected_for_revision'");
     }
 
@@ -189,7 +193,10 @@ const handleDocumentReview = async (req, res, next) => {
     }
 
     application.documents[docName].status = status;
-    if (feedback) application.documents[docName].feedback = feedback;
+    if (feedback) {
+      console.log(`Adding feedback for ${docName}: ${feedback}`);
+      application.documents[docName].adminFeedback = feedback;
+    }
     application.documents[docName].updatedAt = new Date();
 
     await application.save();

@@ -37,15 +37,15 @@ const userSchema = new Schema(
     },
     phone: {
       type: String,
-      required: [true, "Phone number is required"],
+      // required: [true, "Phone number is required"],
       trim: true,
     },
 
     // Demographics
-    date_of_birth: { type: Date, required: true },
-    gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
-    nationality: { type: String, trim: true, required: true },
-    country_of_residence: { type: String, trim: true, required: true },
+    date_of_birth: { type: Date, required: false },
+    gender: { type: String, enum: ["Male", "Female", "Other"], required: false },
+    nationality: { type: String, trim: false, required: false },
+    country_of_residence: { type: String, trim: true, required: false },
 
     // Location
     address: { type: String, trim: true },

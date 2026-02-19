@@ -42,25 +42,66 @@ const internalNoteSchema = new Schema({
  * A sub-document schema for tracking individual document status.
  * This allows for per-document review.
  */
+// const documentStatusSchema = new Schema(
+//   {
+//     url: { type: String, trim: true, default: null },
+//     status: {
+//       type: String,
+//       enum: [
+//         "pending",
+//         "submitted",
+//         "approved",
+//         "rejected_for_revision",
+//       ],
+//       default: "pending", // 'pending' = not yet uploaded by user
+//     },
+//     // For agent to provide feedback (e.g., "PDF is blurry")
+//     feedback: { type: String, trim: true, default: null },
+//     updatedAt: { type: Date, default: null },
+//   },
+//   { _id: false }
+// ); // _id: false to save space, we'll track by key name
+
 const documentStatusSchema = new Schema(
   {
     url: { type: String, trim: true, default: null },
+
     status: {
       type: String,
       enum: [
-        "pending",
-        "submitted",
+        "not_uploaded",
+        "uploaded",
+        "under_review",
         "approved",
-        "rejected_for_revision",
+        "rejected"
       ],
-      default: "pending", // 'pending' = not yet uploaded by user
+      default: "not_uploaded",
     },
-    // For agent to provide feedback (e.g., "PDF is blurry")
-    feedback: { type: String, trim: true, default: null },
-    updatedAt: { type: Date, default: null },
+
+    required: {
+      type: Boolean,
+      default: true,
+    },
+
+    adminFeedback: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
+    uploadedAt: {
+      type: Date,
+      default: null,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { _id: false }
-); // _id: false to save space, we'll track by key name
+);
+
 
 /**
  * NEW: A sub-document schema for tracking individual test scores.
@@ -204,18 +245,61 @@ const applicationSchema = new Schema(
      * Each document now has its own status and feedback loop.
      */
     documents: {
-      transcript: { type: documentStatusSchema, default: () => ({}) },
-      statementOfPurpose: { type: documentStatusSchema, default: () => ({}) },
-      resume_cv: { type: documentStatusSchema, default: () => ({}) },
+      transcript: {
+        type: documentStatusSchema,
+        default: () => ({ required: true })
+      },
+
+      degreeCertificate: {
+        type: documentStatusSchema,
+        default: () => ({ required: true })
+      },
+
+      englishTestScore: {
+        type: documentStatusSchema,
+        default: () => ({ required: true })
+      },
+
+      // gre_gmat: { type: documentStatusSchema, default: () => ({ required: false }) },
+
+      statementOfPurpose: {
+        type: documentStatusSchema,
+        default: () => ({ required: true })
+      },
+
+      resume_cv: {
+        type: documentStatusSchema,
+        default: () => ({ required: true })
+      },
+
       letterOfRecommendation1: {
         type: documentStatusSchema,
-        default: () => ({}),
+        default: () => ({ required: true })
       },
+
       letterOfRecommendation2: {
         type: documentStatusSchema,
-        default: () => ({}),
+        default: () => ({ required: true })
+      },
+
+      passportCopy: {
+        type: documentStatusSchema,
+        default: () => ({ required: true })
+      },
+
+      // sponsorDocuments: { type: documentStatusSchema, default: () => ({ required: false })},
+
+      portfolio: {
+        type: documentStatusSchema,
+        default: () => ({ required: false })
+      },
+
+      workExperienceLetter: {
+        type: documentStatusSchema,
+        default: () => ({ required: false })
       },
     },
+
 
     // Communication thread between Agent and Student
     comments: {

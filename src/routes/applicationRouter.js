@@ -36,10 +36,15 @@ applicationRouter.put(
   authorize("student"),
   uploadFile.fields([
     { name: "transcript", maxCount: 1 },
+    { name: "degreeCertificate", maxCount: 1 },
+    { name: "englishTestScore", maxCount: 1 },
     { name: "statementOfPurpose", maxCount: 1 },
-    { name: "resume_cv", maxCount: 1 },
     { name: "letterOfRecommendation1", maxCount: 1 },
     { name: "letterOfRecommendation2", maxCount: 1 },
+    { name: "resume_cv", maxCount: 1 },
+    { name: "passportCopy", maxCount: 1 },
+    { name: "portfolio", maxCount: 1 },
+    { name: "workExperienceLetter", maxCount: 1 },
   ]),
   handleUploadDocuments
 );

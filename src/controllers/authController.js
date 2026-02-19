@@ -74,7 +74,7 @@ const registerUser = async (req, res, next) => {
       subject: "Account Verification Email",
       html: `
             <h2>Hello ${first_name + " " + last_name} !</h2>
-            <p>Please click here to  <a href="${clientURL}/api/users/activate/${token}" target="_blank">Verify Your Email</a> and Activate your account </p>
+            <p>Please click here to  <a href="${clientURL}/api/auth/activate/${token}" target="_blank">Verify Your Email</a> and Activate your account </p>
           `,
     };
 
@@ -82,6 +82,7 @@ const registerUser = async (req, res, next) => {
     try {
       // await emailWithNodeMailer(emailData);
       console.log("Verification email sent successfully to:", email);
+      console.log("Email content:", emailData);
     } catch (emailError) {
       next(createError(500, "Failed to send verification email"));
       return;
@@ -103,8 +104,10 @@ const registerUser = async (req, res, next) => {
  */
 const activateUserAccount = async (req, res, next) => {
   try {
-    const token = req.body.token;
+    // const token = req.body.token;
+    const token = req.params.token;
     if (!token) throw createError(404, "Token not found");
+    console.log("Activating account with token:");
 
     try {
       // 1. Verify Token
@@ -124,11 +127,23 @@ const activateUserAccount = async (req, res, next) => {
       userInfo.is_verified = true;
       const newUser = await User.create(userInfo);
 
-      return successResponse(res, {
-        statusCode: 201,
-        message: `User was registered successfully`,
-        payload: { newUser },
-      });
+      console.log("Newly Activated User:", newUser);
+
+      // return successResponse(res, {
+      //   statusCode: 201,
+      //   message: `User was registered successfully`,
+      //   payload: { newUser },
+      // });
+
+      if (req.headers.accept?.includes("application/json")) {
+        return successResponse(res, {
+          statusCode: 201,
+          message: `User was registered successfully`,
+          payload: { newUser },
+        });
+      } else {
+        return res.redirect(`http://localhost:5173/login?activated=true`);
+      }
     } catch (error) {
       // 5. Specific JWT Errors
       if (error.name === "TokenExpiredError") {
@@ -189,8 +204,8 @@ const loginUser = async (req, res, next) => {
     res.cookie("accessToken", accessToken, {
       maxAge: 15 * 60 * 1000,
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
     // 5. Send Response
@@ -206,7 +221,6 @@ const loginUser = async (req, res, next) => {
           email: user.email,
           role: user.role.role_name,
         },
-        accessToken,
       },
     });
   } catch (error) {

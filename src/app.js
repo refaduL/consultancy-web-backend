@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 
 const seedRouter = require("./routes/seedRouter");
 const userRouter = require("./routes/userRouter");
@@ -14,6 +15,7 @@ const courseRouter = require("./routes/courseRouter");
 const scholarshipRouter = require("./routes/scholarshipRouter");
 const universityRouter = require("./routes/universityRouter");
 const applicationRouter = require("./routes/applicationRouter");
+const documentRouter = require("./routes/documentRouter");
 
 const dbErrorHandler = require("./utils/dbErrorHandler");
 const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
@@ -39,6 +41,12 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Serve application uploads as static files
+app.use(
+  "/uploads/applications",
+  express.static(path.join(__dirname, "../uploads/applications"))
+);
+
 app.get("/test", (req, res) => {
   res.status(200).send({ message: "get: api is working fine" });
 });
@@ -47,6 +55,7 @@ app.use("/api/seed", seedRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/applications", applicationRouter);
+app.use("/api/documents", documentRouter);
 app.use("/api/universities", universityRouter);
 app.use("/api/programs", programRouter);
 app.use("/api/courses", courseRouter);
