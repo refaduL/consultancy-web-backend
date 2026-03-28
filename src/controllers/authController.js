@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 const Role = require("../models/roleModel");
 
 const { successResponse } = require("./responseController");
-const { jwtActivationKey, jwtAccessKey, clientURL } = require("../secret");
+const { jwtActivationKey, jwtAccessKey, serverURL, clientURL } = require("../secret");
 const { createJSONWebToken } = require("../helpers/jsonwebtoken");
 const { emailWithNodeMailer } = require("../helpers/email");
 
@@ -74,7 +74,7 @@ const registerUser = async (req, res, next) => {
       subject: "Account Verification Email",
       html: `
             <h2>Hello ${first_name + " " + last_name} !</h2>
-            <p>Please click here to  <a href="${clientURL}/api/auth/activate/${token}" target="_blank">Verify Your Email</a> and Activate your account </p>
+            <p>Please click here to  <a href="${serverURL}/api/auth/activate/${token}" target="_blank">Verify Your Email</a> and Activate your account </p>
           `,
     };
 
@@ -142,7 +142,7 @@ const activateUserAccount = async (req, res, next) => {
           payload: { newUser },
         });
       } else {
-        return res.redirect(`http://localhost:5173/login?activated=true`);
+        return res.redirect(`${clientURL}/login?activated=true`);
       }
     } catch (error) {
       // 5. Specific JWT Errors

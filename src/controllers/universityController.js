@@ -1,6 +1,4 @@
-const {
-  successResponse,
-} = require("./responseController");
+const { successResponse } = require("./responseController");
 const createError = require("http-errors");
 const {
   findAllUniversities,
@@ -8,6 +6,7 @@ const {
   createUniversity,
   updateUniversity,
   deleteUniversity,
+  toggleInterestedUniversity,
 } = require("../services/universityService");
 
 /**
@@ -23,7 +22,7 @@ const handleGetUniversities = async (req, res, next) => {
     const { universities, pagination } = await findAllUniversities(
       search,
       page,
-      limit
+      limit,
     );
 
     return successResponse(res, {
@@ -115,10 +114,28 @@ const handleDeleteUniversity = async (req, res, next) => {
   }
 };
 
+const handleToggleInterestedUniversity = async (req, res) => {
+  try {
+    const { uniId } = req.params;
+    const userId = req.user._id; 
+
+    const { action, updatedUser } = await toggleInterestedUniversity(userId, uniId);
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: `University ${action} to interested list successfully`,
+      payload: { user: updatedUser },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   handleGetUniversities,
   handleGetUniversityById,
   handleCreateUniversity,
   handleUpdateUniversity,
   handleDeleteUniversity,
+  handleToggleInterestedUniversity,
 };

@@ -99,6 +99,11 @@ const userSchema = new Schema(
       ref: "Application",
       default: null,
     },
+    
+    interestedUniversities: [{
+      type: Schema.Types.ObjectId,
+      ref: 'University'
+    }]
   },
   {
     timestamps: true,

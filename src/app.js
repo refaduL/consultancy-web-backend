@@ -20,11 +20,12 @@ const documentRouter = require("./routes/documentRouter");
 const dbErrorHandler = require("./utils/dbErrorHandler");
 const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
 const { errorResponse } = require("./controllers/responseController");
+const { clientURL } = require("./secret");
 
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // frontend URL
+  origin: clientURL, 
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));

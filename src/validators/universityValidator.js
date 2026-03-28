@@ -14,8 +14,8 @@ const universityFields = {
 
   type: body("type")
     .optional()
-    .isIn(["Public", "Private", "Semi-Private"])
-    .withMessage("Type must be one of: Public, Private, Semi-Private"),
+    .isIn(["Public", "Private", "Technical", "Research", "Liberal Arts", "Other"])
+    .withMessage("Type must be one of: Public, Private, Technical, Research, Liberal Arts, Other"),
 
   established_year: body("established_year")
     .optional()

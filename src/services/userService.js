@@ -5,7 +5,7 @@ const createError = require("http-errors");
 const User = require("../models/userModel");
 const { deleteImage } = require("../helpers/deleteImage");
 
-const findUsers = async (search = "", page = 1, limit = 5) => {
+const findUsers = async (search = "", page = 1, limit = 20) => {
   const searchRegExp = new RegExp(".*" + search + ".*", "i");
 
   const filter = {
@@ -18,7 +18,7 @@ const findUsers = async (search = "", page = 1, limit = 5) => {
   };
 
   const users = await User.find(filter)
-    .populate("applications", "status")
+    .populate("applications", "status", "interestedUniversities")
     .limit(limit)
     .skip((page - 1) * limit)
     .select("-password")

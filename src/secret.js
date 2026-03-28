@@ -8,8 +8,9 @@ const jwtActivationKey = process.env.JWT_ACTIVATION_KEY || 'asdfg_lkjh';
 const jwtAccessKey = process.env.JWT_ACCESS_KEY || 'asdfg_lkjh';
 const smtpUsername = process.env.SMTP_USERNAME || '';
 const smtpPassword = process.env.SMTP_PASSWORD || '';
+const serverURL = process.env.SERVER_URL || '';
 const clientURL = process.env.CLIENT_URL || '';
 
 
 
-module.exports = { serverPort, mongodbUrl, defaultImagepath, jwtActivationKey, jwtAccessKey, smtpUsername, smtpPassword, clientURL };
+module.exports = { serverPort, mongodbUrl, defaultImagepath, jwtActivationKey, jwtAccessKey, smtpUsername, smtpPassword, serverURL, clientURL };

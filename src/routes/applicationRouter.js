@@ -6,7 +6,7 @@ const {
   handleInitialReview,
   handleUploadDocuments,
   handleDocumentReview,
-  handleFinalDecision,
+  handleFinalReview,
   handleGetAllApplications,
   handleGetApplication,
 } = require("../controllers/applicationController");
@@ -82,7 +82,7 @@ applicationRouter.get(
 
 // 5. Get Specific Application by ID
 applicationRouter.get(
-  "/:id",
+  "/:appId",
   validateApplication("getOne"),
   runValidation,
   isLoggedIn,
@@ -92,7 +92,7 @@ applicationRouter.get(
 
 // 6. Initial Review (Accept/Reject textual data)
 applicationRouter.put(
-  "/:id/initial-review",
+  "/:appId/initial-review",
   isLoggedIn,
   authorize("agent", "admin"),
   handleInitialReview
@@ -100,18 +100,18 @@ applicationRouter.put(
 
 // 7. Review Specific Document
 applicationRouter.put(
-  "/:id/doc-review",
+  "/:appId/documents/:docKey",
   isLoggedIn,
   authorize("agent", "admin"),
   handleDocumentReview
 );
 
-// 8. Final Decision (Approve/Reject entire app)
+// 8. Final Review (Approve/Reject entire app)
 applicationRouter.put(
-  "/:id/final-decision",
+  "/:appId/final-review",
   isLoggedIn,
   authorize("agent", "admin"),
-  handleFinalDecision
+  handleFinalReview
 );
 
 module.exports = applicationRouter;

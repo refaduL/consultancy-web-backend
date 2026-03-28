@@ -10,21 +10,21 @@ const {
   handleCreateUniversity,
   handleUpdateUniversity,
   handleDeleteUniversity,
+  handleToggleInterestedUniversity,
 } = require("../controllers/universityController");
-
 
 // Public Routes
 universityRouter.get(
   "/",
   validateUniversity("getMany"),
   runValidation,
-  handleGetUniversities
+  handleGetUniversities,
 );
 universityRouter.get(
   "/:id",
   validateUniversity("getOne"),
   runValidation,
-  handleGetUniversityById
+  handleGetUniversityById,
 );
 
 // Admin Routes
@@ -34,7 +34,7 @@ universityRouter.post(
   runValidation,
   isLoggedIn,
   authorize("admin", "agent"),
-  handleCreateUniversity
+  handleCreateUniversity,
 );
 universityRouter.put(
   "/:id",
@@ -42,7 +42,7 @@ universityRouter.put(
   runValidation,
   isLoggedIn,
   authorize("admin", "agent"),
-  handleUpdateUniversity
+  handleUpdateUniversity,
 );
 universityRouter.delete(
   "/:id",
@@ -50,7 +50,16 @@ universityRouter.delete(
   runValidation,
   isLoggedIn,
   authorize("admin", "agent"),
-  handleDeleteUniversity
+  handleDeleteUniversity,
+);
+
+// api/universities/:uniId/toggle-interest
+universityRouter.put(
+  "/:uniId/toggle-interest",
+  isLoggedIn,
+  authorize("student"),
+  handleToggleInterestedUniversity,
 );
 
 module.exports = universityRouter;
+

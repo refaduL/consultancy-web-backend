@@ -10,53 +10,172 @@ const deleteOldFile = require("../helpers/deleteOldFile");
  * - Creates application if not exists.
  * - Updates application if exists (only if status is draft, submitted, or rejected).
  * - NO documents handled here.
+ * - route: POST /api/applications/submit
  */
+
+// const handleSubmitApplication = async (req, res, next) => {
+//   try {
+//     const userId = req.user._id;
+//     const { educationHistory, testScores, preferences } = req.body;
+
+//     console.log("check variables: \neducationHistory:\n", educationHistory, "\ntestScores:\n", testScores, "\npreferences:\n", preferences);
+
+//     let application = await Application.findOne({ user: userId });
+
+//     if (application) {
+//       // UPDATE LOGIC
+//       // Block updates if application is under review or approved
+//       if (['accepted', 'approved'].includes(application.status)) {
+//         throw createError(400, "Application is locked. You cannot edit details after acceptance.");
+//       }
+
+//       application.educationHistory = educationHistory || application.educationHistory;
+//       application.testScores = testScores || application.testScores;
+//       application.preferences = preferences || application.preferences;
+
+//       // If re-applying after rejection, reset status to submitted
+//       if (application.status === 'rejected' || application.status === 'draft') {
+//         application.status = 'submitted';
+//         application.timeline.submittedAt = new Date();
+//         application.rejectionFeedback = undefined; // Clear previous feedback
+//       }
+//       await application.save();
+
+//     } else {
+//       // CREATE LOGIC
+//       application = await Application.create({
+//         user: userId,
+//         status: 'submitted',
+//         educationHistory,
+//         testScores,
+//         preferences,
+//         timeline: {
+//           submittedAt: new Date()
+//         }
+//       });
+
+//       // Link to User
+//       await User.findByIdAndUpdate(userId, { application: application._id });
+//     }
+
+//     return successResponse(res, {
+//       statusCode: 200,
+//       message: "Application submitted successfully",
+//       payload: { application },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+const LOCKED_STATUSES = ["accepted", "approved"];
+const TEST_SCORE_KEYS = ["ielts", "toefl", "gre", "gmat", "duolingo", "pte"];
+
 const handleSubmitApplication = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { educationHistory, testScores, preferences } = req.body;
 
-    console.log("check variables: \neducationHistory:\n", educationHistory, "\ntestScores:\n", testScores, "\npreferences:\n", preferences);
+    const {
+      // User profile fields
+      first_name, last_name, phone, nationality, country_of_residence, date_of_birth, gender,
+      // Application fields
+      educationHistory, testScores, preferences,financial_info,
+    } = req.body;
 
+    //  Validate required fields
+    if (!first_name?.trim())
+      throw createError(400, "first_name is required.");
+    if (!phone?.trim())
+      throw createError(400, "phone is required.");
+    if (!nationality?.trim())
+      throw createError(400, "nationality is required.");
+    if (!country_of_residence?.trim())
+      throw createError(400, "country_of_residence is required.");
+    if (!Array.isArray(educationHistory) || educationHistory.length === 0)
+      throw createError(400, "At least one education entry is required.");
+    if (!preferences?.preferredCountries?.length)
+      throw createError(400, "At least one preferred country is required.");
+    if (!preferences?.preferredFieldOfStudy?.trim())
+      throw createError(400, "preferredFieldOfStudy is required.");
+    if (!preferences?.preferredIntake?.trim())
+      throw createError(400, "preferredIntake is required.");
+    if (!financial_info?.funding_source?.trim())
+      throw createError(400, "funding_source is required.");
+
+    //  Clean testScores: drop entries where score is blank 
+    const cleanedTestScores = {};
+    if (testScores && typeof testScores === "object") {
+      for (const key of TEST_SCORE_KEYS) {
+        const entry = testScores[key];
+        if (entry?.score?.trim()) {
+          cleanedTestScores[key] = {
+            score: entry.score.trim(),
+            ...(entry.date?.trim() ? { date: new Date(entry.date) } : {}),
+          };
+        }
+      }
+    }
+
+    //  Build user profile update (only non-empty values) 
+    const userUpdates = {
+      ...((first_name?.trim())         && { first_name: first_name.trim() }),
+      ...(last_name?.trim()            && { last_name: last_name.trim() }),
+      ...(phone?.trim()                && { phone: phone.trim() }),
+      ...(nationality?.trim()          && { nationality: nationality.trim() }),
+      ...(country_of_residence?.trim() && { country_of_residence: country_of_residence.trim() }),
+      ...(gender?.trim()               && { gender: gender.trim() }),
+      ...(date_of_birth?.trim()        && { date_of_birth: new Date(date_of_birth) }),
+    };
+
+    await User.findByIdAndUpdate(userId, { $set: userUpdates });
+
+    //  Upsert application 
     let application = await Application.findOne({ user: userId });
 
     if (application) {
-      // UPDATE LOGIC
-      // Block updates if application is under review or approved
-      if (['accepted', 'approved'].includes(application.status)) {
-        throw createError(400, "Application is locked. You cannot edit details after acceptance.");
+      if (LOCKED_STATUSES.includes(application.status)) {
+        throw createError(400, "Application is locked and cannot be edited after acceptance.");
       }
 
-      application.educationHistory = educationHistory || application.educationHistory;
-      application.testScores = testScores || application.testScores;
-      application.preferences = preferences || application.preferences;
+      application.educationHistory = educationHistory;
+      application.preferences      = preferences;
+      application.financial_info   = financial_info;
 
-      // If re-applying after rejection, reset status to submitted
-      if (application.status === 'rejected' || application.status === 'draft') {
-        application.status = 'submitted';
-        application.rejectionFeedback = undefined; // Clear previous feedback
+      // Merge: only overwrite test keys that came in with an actual score
+      for (const key of TEST_SCORE_KEYS) {
+        if (cleanedTestScores[key] !== undefined) {
+          application.testScores[key] = cleanedTestScores[key];
+        }
+      }
+
+      if (["draft", "rejected"].includes(application.status)) {
+        application.status               = "submitted";
+        application.timeline.submittedAt = new Date();
+        application.rejectionFeedback    = undefined;
       }
 
       await application.save();
+      
     } else {
-      // CREATE LOGIC
       application = await Application.create({
         user: userId,
-        status: 'submitted',
+        status: "submitted",
         educationHistory,
-        testScores,
-        preferences
+        testScores: cleanedTestScores,
+        preferences,
+        financial_info,
+        timeline: { submittedAt: new Date() },
       });
 
-      // Link to User
       await User.findByIdAndUpdate(userId, { application: application._id });
     }
 
     return successResponse(res, {
       statusCode: 200,
-      message: "Application submitted successfully",
+      message: "Application submitted successfully.",
       payload: { application },
     });
+
   } catch (error) {
     next(error);
   }
@@ -69,7 +188,7 @@ const handleSubmitApplication = async (req, res, next) => {
  */
 const handleInitialReview = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { appId } = req.params;
     const { review, rejectionFeedback } = req.body;
     const agentId = req.user.agent_profile; // The agent performing the action
 
@@ -77,7 +196,7 @@ const handleInitialReview = async (req, res, next) => {
       throw createError(400, "review must be 'accepted' or 'rejected'");
     }
 
-    const application = await findApplicationByAppId(id);
+    const application = await findApplicationByAppId(appId);
 
     if (application.status !== 'submitted') {
       throw createError(400, "Application must be in 'submitted' state for initial review.");
@@ -87,13 +206,13 @@ const handleInitialReview = async (req, res, next) => {
       if (!rejectionFeedback) throw createError(400, "Rejection feedback is required.");
       application.status = 'rejected';
       application.rejectionFeedback = rejectionFeedback;
-      // Note: We don't assign the agent on rejection, allowing others to review next time? 
-      // Or assign them anyway. 
-      // Let's assign to track who rejected it.
+      application.timeline.rejectedAt = new Date();
+      // assign the agent to track who rejected it.
       application.agent = agentId;
     } else {
       // Accepted
       application.status = 'accepted';
+      application.timeline.acceptedAt = new Date(); 
       application.agent = agentId; 
     }
 
@@ -174,37 +293,37 @@ const handleUploadDocuments = async (req, res, next) => {
  */
 const handleDocumentReview = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { docName, status, feedback } = req.body;
+    const { appId, docKey } = req.params;
+    const { status, adminFeedback } = req.body;
 
     if (!['approved', 'rejected'].includes(status)) {
-        throw createError(400, "Status must be 'approved' or 'rejected_for_revision'");
+        throw createError(400, "Status must be 'approved' or 'rejected'");
     }
 
-    const application = await findApplicationByAppId(id);
+    const application = await findApplicationByAppId(appId);
 
     // Security: Only assigned agent (or admin) can review
     if (req.user.role.role_name !== 'admin' && application.agent.toString() !== req.user.agent_profile.toString()) {
         throw createError(403, "You are not the assigned agent for this application.");
     }
 
-    if (!application.documents[docName]) {
-        throw createError(400, `Invalid document name: ${docName}`);
+    if (!application.documents[docKey]) {
+        throw createError(400, `Invalid document name: ${docKey}`);
     }
 
-    application.documents[docName].status = status;
-    if (feedback) {
-      console.log(`Adding feedback for ${docName}: ${feedback}`);
-      application.documents[docName].adminFeedback = feedback;
+    application.documents[docKey].status = status;
+    if (adminFeedback) {
+      console.log(`Adding feedback for ${docKey}: ${adminFeedback}`);
+      application.documents[docKey].adminFeedback = adminFeedback;
     }
-    application.documents[docName].updatedAt = new Date();
+    application.documents[docKey].updatedAt = new Date();
 
     await application.save();
 
     return successResponse(res, {
       statusCode: 200,
-      message: `${docName} marked as ${status}`,
-      payload: { [docName]: application.documents[docName] },
+      message: `${docKey} marked as ${status}`,
+      payload: { [docKey]: application.documents[docKey] },
     });
 
   } catch (error) {
@@ -216,16 +335,16 @@ const handleDocumentReview = async (req, res, next) => {
  * 5. AGENT: Final Approval
  * - Finalize the application status to 'approved' or 'rejected'.
  */
-const handleFinalDecision = async (req, res, next) => {
+const handleFinalReview = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { appId } = req.params;
     const { review, rejectionFeedback } = req.body;
 
     if (!['approved', 'rejected'].includes(review)) {
         throw createError(400, "review must be 'approved' or 'rejected'");
     }
 
-    const application = await findApplicationByAppId(id);
+    const application = await findApplicationByAppId(appId);
 
     // Security check
     if (req.user.role.role_name !== 'admin' && application.agent.toString() !== req.user.agent_profile.toString()) {
@@ -238,7 +357,7 @@ const handleFinalDecision = async (req, res, next) => {
         const requiredDocs = ['transcript', 'resume_cv']; // Example required docs
         for (const doc of requiredDocs) {
             if (docs[doc].status !== 'approved') {
-                throw createError(400, `Cannot approve application. ${doc} is not yet approved.`);
+                throw createError(400, `Cannot approve application. ${doc.toUpperCase()} is not yet approved.`);
             }
         }
     }
@@ -252,7 +371,7 @@ const handleFinalDecision = async (req, res, next) => {
 
     return successResponse(res, {
       statusCode: 200,
-      message: `Application Finalized: ${status}`,
+      message: `Application Finalized: ${review}`,
       payload: { application },
     });
 
@@ -306,9 +425,9 @@ const handleGetApplication = async (req, res, next) => {
             application = await findApplicationByUserId(userId);
         } else {
             // Agent/Admin accessing by ID param
-            const { id } = req.params;
-            if (!id) throw createError(400, "Application ID required for agents");
-            application = await findApplicationByAppId(id);
+            const { appId } = req.params;
+            if (!appId) throw createError(400, "Application ID required for agents");
+            application = await findApplicationByAppId(appId);
         }
 
         if (!application) throw createError(404, "Application not found");
@@ -328,7 +447,7 @@ module.exports = {
   handleInitialReview,
   handleUploadDocuments,
   handleDocumentReview,
-  handleFinalDecision,
+  handleFinalReview,
   handleGetAllApplications,
   handleGetApplication
 };

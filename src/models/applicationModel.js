@@ -167,14 +167,7 @@ const applicationSchema = new Schema(
       default: "draft",
       index: true,
     },
-
-    // Audit Trail / Timeline
-    timeline: {
-      submittedAt: { type: Date },
-      acceptedAt: { type: Date }, 
-      approvedAt: { type: Date }, 
-      rejectedAt: { type: Date },
-    },
+    
     /**
      * Feedback provided by the agent if the application is rejected.
      * This field is conditionally required.
@@ -194,6 +187,15 @@ const applicationSchema = new Schema(
           'Rejection feedback is required when the status is "rejected".',
       },
     },
+
+    // Audit Trail / Timeline
+    timeline: {
+      submittedAt: { type: Date },
+      acceptedAt: { type: Date }, 
+      approvedAt: { type: Date }, 
+      rejectedAt: { type: Date },
+    },
+    
 
     educationHistory: {
       type: [educationSchema],

@@ -16,7 +16,7 @@ const universitySchema = new Schema(
     },
     type: {
       type: String,
-      enum: ['Public', 'Private', 'Semi-Private'],
+      enum: ['Public', 'Private', 'Technical', 'Research', 'Liberal Arts', 'Other'],
       default: 'Public',
       index: true,
     },

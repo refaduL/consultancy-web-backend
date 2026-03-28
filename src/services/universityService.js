@@ -140,10 +140,49 @@ const deleteUniversity = async (id) => {
   return university;
 };
 
+/**
+ * Toggle Interested University for User
+ */
+const toggleInterestedUniversity = async (userId, uniId) => {
+    // Validate university exists
+    const university = await University.findById(uniId);
+    if (!university) {
+      throw createError(404, "University not found");
+    }
+
+    // Check if already interested
+    const user = await User.findById(userId);
+    const isInterested = user.interestedUniversities.includes(uniId);
+
+    let updatedUser;
+    let action;
+
+    if (isInterested) {
+      // Remove from interested list
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $pull: { interestedUniversities: uniId } },
+        { new: true }
+      );
+      action = "removed";
+    } else {
+      // Add to interested list
+      updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { interestedUniversities: uniId } },
+        { new: true }
+      );
+      action = "added";
+    }
+
+    return {action, updatedUser };
+};
+
 module.exports = {
   findAllUniversities,
   findUniversityById,
   createUniversity,
   updateUniversity,
   deleteUniversity,
+  toggleInterestedUniversity,
 };
