@@ -37,7 +37,9 @@ const rateLimiter = rateLimit({
 });
 
 app.use(rateLimiter);
-app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
