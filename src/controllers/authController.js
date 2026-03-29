@@ -7,7 +7,7 @@ const Role = require("../models/roleModel");
 const { successResponse } = require("./responseController");
 const { jwtActivationKey, jwtAccessKey, serverURL, clientURL } = require("../secret");
 const { createJSONWebToken } = require("../helpers/jsonwebtoken");
-const { emailWithNodeMailer } = require("../helpers/email");
+const emailWithNodeMailer = require("../helpers/email");
 
 /**
  * REGISTER USER
@@ -84,6 +84,7 @@ const registerUser = async (req, res, next) => {
       console.log("Verification email sent successfully to:", email);
       console.log("Email content:", emailData);
     } catch (emailError) {
+      console.error("Email error happened: ", emailError);
       next(createError(500, "Failed to send verification email"));
       return;
     }
