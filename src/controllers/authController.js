@@ -80,7 +80,7 @@ const registerUser = async (req, res, next) => {
 
     //  email using nodemailer
     try {
-      // await emailWithNodeMailer(emailData);
+      await emailWithNodeMailer(emailData);
       console.log("Verification email sent successfully to:", email);
       console.log("Email content:", emailData);
     } catch (emailError) {
@@ -253,9 +253,29 @@ const getProfile = async (req, res, next) => {
 /**
  * LOGOUT
  */
+// const logoutUser = (req, res, next) => {
+//   try {
+//     res.clearCookie("accessToken");
+
+//     return successResponse(res, {
+//       statusCode: 200,
+//       message: "User logged out successfully",
+//       payload: {},
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const logoutUser = (req, res, next) => {
   try {
-    res.clearCookie("accessToken");
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/", // Explicitly set the path
+      domain: process.env.NODE_ENV === "production" ? ".yourdomain.com" : undefined // Add your domain
+    });
 
     return successResponse(res, {
       statusCode: 200,
