@@ -243,7 +243,7 @@ const handleUploadDocuments = async (req, res, next) => {
     
     // Allow uploads only when accepted
     if (application.status !== "accepted") {
-      throw createError(403, "You can only upload documents when your application is accepted.");
+      throw createError(403, "Uploading document is allowed only when the application is in ACCEPTED phase.");
     } 
 
     // Map uploaded files to schema fields
@@ -360,11 +360,13 @@ const handleFinalReview = async (req, res, next) => {
                 throw createError(400, `Cannot approve application. ${doc.toUpperCase()} is not yet approved.`);
             }
         }
+        application.timeline.approvedAt = new Date();
     }
 
     application.status = review;
     if (review === 'rejected' && rejectionFeedback) {
         application.rejectionFeedback = rejectionFeedback;
+        application.timeline.rejectedAt = new Date();
     }
 
     await application.save();
