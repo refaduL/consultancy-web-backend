@@ -7,6 +7,7 @@ const { runValidation } = require("../validators/index");
 const {
   handleGetScholarships,
   handleGetScholarshipById,
+  handleGetScholarshipsByUniId,
   handleCreateScholarship,
   handleUpdateScholarship,
   handleDeleteScholarship,
@@ -29,6 +30,8 @@ scholarshipRouter.get(
   runValidation,
   handleGetScholarshipById
 );
+
+scholarshipRouter.get("/university/:universityId", validateScholarship("getMany"), runValidation, handleGetScholarshipsByUniId);
 
 // ADMIN/AGENT ROUTES
 

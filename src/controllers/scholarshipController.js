@@ -73,6 +73,21 @@ const handleGetScholarshipById = async (req, res, next) => {
   }
 };
 
+const handleGetScholarshipsByUniId = async (req, res, next) => {
+  try {
+    const { universityId } = req.params;
+    const { scholarships, pagination } = await findAllScholarshipsByUniId(universityId, req.query);
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Scholarships fetched successfully",
+      payload: { scholarships, pagination },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * POST /api/scholarships
  * Admin/Agent: Create new scholarship
@@ -140,6 +155,7 @@ const handleDeleteScholarship = async (req, res, next) => {
 module.exports = {
   handleGetScholarships,
   handleGetScholarshipById,
+  handleGetScholarshipsByUniId,
   handleCreateScholarship,
   handleUpdateScholarship,
   handleDeleteScholarship,

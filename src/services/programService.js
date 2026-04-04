@@ -103,10 +103,22 @@ const findProgramById = async (id) => {
   return program;
 };
 
+const findProgramsByUniId = async (universityId, query) => {
+  if (!mongoose.Types.ObjectId.isValid(universityId)) {
+    throw createError(400, "Invalid University ID format");
+  }
+
+  const universityExists = await University.findById(universityId);
+  if (!universityExists) throw createError(404, "University not found");
+
+  return findAllPrograms({ ...query, university_id: universityId });
+}
+
 /**
  * CREATE PROGRAM
  */
 const createProgram = async (progInfo) => {
+  console.log("Creating program with info:", progInfo);
   // 1. Validate University
   if (!progInfo.university) throw createError(400, "University ID is required");
   if (!mongoose.Types.ObjectId.isValid(progInfo.university)) throw createError(400, "Invalid University ID");
@@ -156,6 +168,7 @@ const deleteProgram = async (id) => {
 module.exports = {
   findAllPrograms,
   findProgramById,
+  findProgramsByUniId,
   createProgram,
   updateProgram,
   deleteProgram

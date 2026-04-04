@@ -51,6 +51,12 @@ const universitySchema = new Schema(
       type: [String], // Array of image URLs for campus slider
       default: [],
     },
+    // Acceptance rate as a percentage (e.g., 7.5 for 7.5%)
+    acceptance_rate: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
     // Rankings
     rankings: {
       qs: { type: Number, default: null },

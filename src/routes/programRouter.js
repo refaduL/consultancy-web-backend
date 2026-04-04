@@ -7,6 +7,7 @@ const { runValidation } = require("../validators/index");
 const {
   handleGetPrograms,
   handleGetProgramById,
+  handleGetProgramsByUniId,
   handleCreateProgram,
   handleUpdateProgram,
   handleDeleteProgram

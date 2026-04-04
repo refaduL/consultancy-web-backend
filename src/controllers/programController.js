@@ -3,6 +3,7 @@ const createError = require("http-errors");
 const {
   findAllPrograms,
   findProgramById,
+  findProgramsByUniId,
   createProgram,
   updateProgram,
   deleteProgram
@@ -39,6 +40,21 @@ const handleGetProgramById = async (req, res, next) => {
       statusCode: 200,
       message: "Program fetched successfully",
       payload: { program },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleGetProgramsByUniId = async (req, res, next) => {
+  try {
+    const { universityId } = req.params;
+    const { programs, pagination } = await findProgramsByUniId(universityId, req.query);
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Programs fetched successfully",
+      payload: { programs, pagination },
     });
   } catch (error) {
     next(error);
@@ -113,6 +129,7 @@ const handleDeleteProgram = async (req, res, next) => {
 module.exports = {
   handleGetPrograms,
   handleGetProgramById,
+  handleGetProgramsByUniId,
   handleCreateProgram,
   handleUpdateProgram,
   handleDeleteProgram

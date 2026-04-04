@@ -82,7 +82,7 @@ const createUniversity = async (uniInfo) => {
   if (exists)
     throw createError(409, "University with this name already exists");
 
-  // console.log("uni will be added: ", uniInfo);
+  console.log("uni will be added: ", uniInfo);
     return await University.create(uniInfo);
 };
 

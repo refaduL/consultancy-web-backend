@@ -208,12 +208,13 @@ const updateScholarship = async (id, data) => {
     throw createError(400, "Invalid Scholarship ID format");
   }
 
+  console.log(`Updating scholarship ${id} with data:`, data);
   // If updating university, verify new university exists
   if (data.university) {
-    if (!mongoose.Types.ObjectId.isValid(data.university)) {
+    if (!mongoose.Types.ObjectId.isValid(data.university._id)) {
       throw createError(400, "Invalid University ID format");
     }
-    const universityExists = await University.findById(data.university);
+    const universityExists = await University.findById(data.university._id);
     if (!universityExists) {
       throw createError(404, "University not found");
     }
@@ -221,18 +222,18 @@ const updateScholarship = async (id, data) => {
 
   // If updating program, validate it
   if (data.program) {
-    if (!mongoose.Types.ObjectId.isValid(data.program)) {
+    if (!mongoose.Types.ObjectId.isValid(data.program._id)) {
       throw createError(400, "Invalid Program ID format");
     }
 
-    const programExists = await Program.findById(data.program);
+    const programExists = await Program.findById(data.program._id);
     if (!programExists) {
       throw createError(404, "Program not found");
     }
 
     // Get current scholarship or new university to verify program belongs to university
     const currentScholarship = await Scholarship.findById(id);
-    const universityId = data.university || currentScholarship?.university;
+    const universityId = data.university?._id || currentScholarship?.university;
 
     if (programExists.university.toString() !== universityId.toString()) {
       throw createError(
@@ -249,7 +250,7 @@ const updateScholarship = async (id, data) => {
       throw createError(404, "Scholarship not found");
     }
 
-    const universityId = data.university || scholarship.university;
+    const universityId = data.university?._id || scholarship.university;
     const nameExists = await Scholarship.findOne({
       scholarship_name: data.scholarship_name.trim(),
       university: universityId,
