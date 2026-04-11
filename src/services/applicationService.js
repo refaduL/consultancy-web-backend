@@ -8,7 +8,7 @@ const createError = require("http-errors");
 const findApplicationByUserId = async (userId) => {
   return await Application.findOne({ user: userId })
     .populate("agent", "first_name last_name email bio specializations")
-    .populate("user", "first_name last_name email phone");
+    .populate("user", "first_name last_name email phone is_verified");
 };
 
 /**
@@ -16,7 +16,7 @@ const findApplicationByUserId = async (userId) => {
  */
 const findApplicationByAppId = async (appId) => {
   const app = await Application.findById(appId)
-    .populate("user", "first_name last_name email phone nationality");
+    .populate("user", "first_name last_name email phone nationality is_verified");
   
   if (!app) throw createError(404, "Application not found");
   return app;
@@ -33,7 +33,7 @@ const findAllApplications = async (search, status, page = 1, limit = 10, agentId
   // Optional: Add search logic here if needed (e.g., searching by user name)
   
   const applications = await Application.find(filter)
-    .populate("user", "first_name last_name email country_of_residence")
+    .populate("user", "first_name last_name email country_of_residence is_verified")
     .limit(limit)
     .skip((page - 1) * limit)
     .sort({ updatedAt: -1 });
