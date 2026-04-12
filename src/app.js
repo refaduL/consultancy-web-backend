@@ -16,6 +16,7 @@ const scholarshipRouter = require("./routes/scholarshipRouter");
 const universityRouter = require("./routes/universityRouter");
 const applicationRouter = require("./routes/applicationRouter");
 const documentRouter = require("./routes/documentRouter");
+const enrollmentRouter = require("./routes/enrollmentRouter");
 
 const dbErrorHandler = require("./utils/dbErrorHandler");
 const { getDefaultErrorCode, getErrorDetails } = require("./utils/errorUtils");
@@ -63,6 +64,7 @@ app.use("/api/universities", universityRouter);
 app.use("/api/programs", programRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/scholarships", scholarshipRouter);
+app.use("/api/enrollments", enrollmentRouter);
 
 // handle 404 error => route not found
 app.use((req, res, next) => {
